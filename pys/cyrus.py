@@ -23,6 +23,7 @@ from pys import img2sdat
 from pys import imgextractor
 from pys import sdat2img
 from pys import gettype
+from pys import lpunpack
 
 if os.name == 'nt':
     import ctypes
@@ -592,10 +593,7 @@ def repack_super():
         call(argvs)
     try:
         if os.path.isfile(os.path.join(V.out, 'super.img')):
-            for i in parts:
-                for slot in ('_a', '_b', ''):
-                    if os.path.isfile(os.path.join(V.out, i + slot + '.img')):
-                        os.remove(os.path.join(V.out, i + slot + '.img'))
+            print("> 合成完成")
     except (BaseException, Exception):
         ...
 
@@ -937,17 +935,17 @@ def decompress_img(source, distance, keep=1):
                     source = source.replace('.unsparse', '')
                 call(f'extract.erofs -i {source.replace(os.sep, "/")} -o {V.main_dir} -x')
             elif file_type == 'super':
-                call(f'lpunpack {source} {V.input}')
+                #lpunpack.unpack(source,V.input)
                 for img in glob(V.input + '*_*.img'):
-                    if not V.SETUP_MANIFEST['IS_VAB'] == '1' or os.path.getsize(img) == 0:
+                    if os.path.getsize(img) == 0:
                         os.remove(img)
                     else:
-                        new_source = img.replace('_a.img','.img')
-                        new_source = img.replace('_b.img','.img')
-                        try:
-                            os.rename(img, new_source)
-                        except:
-                            ...
+                        if img.endswith('_a.img') or img.endswith('_b.img') :
+                            new_file=img[:-6] + '.img'
+                            try:
+                                os.rename(img, new_file)
+                            except:
+                                ...
                 j = input('> 是否继续分解img [0/1]: ') == 1
                 if j != 1:
                     return
@@ -1571,30 +1569,30 @@ def menu_main():
                             if input() != '1':
                                 continue
                         boot_utils(source, V.out, 2)
-            for file in glob(V.config + '*_contexts.txt'):
-                f_basename = os.path.basename(file).rsplit('_', 1)[0]
-                source = V.main_dir + f_basename
-                if os.path.isdir(source):
-                    fsconfig = V.config + f_basename + '_fsconfig.txt'
-                    contexts = V.config + f_basename + '_contexts.txt'
-                    infojson = V.config + f_basename + '_info.txt'
-                    if not os.path.isfile(infojson):
-                        infojson = None
-                    if V.SETUP_MANIFEST['REPACK_EROFS_IMG'] == '0' and V.SETUP_MANIFEST['REPACK_TO_RW'] == '1':
-                        if V.SETUP_MANIFEST['REPACK_EROFS_IMG'] == '1':
-                            V.SETUP_MANIFEST['REPACK_EROFS_IMG'] = '0'
-                            V.SETUP_MANIFEST['REPACK_TO_RW'] = '1'
-                    elif V.SETUP_MANIFEST['REPACK_EROFS_IMG'] == '0' and V.SETUP_MANIFEST['REPACK_TO_RW'] == '0':
-                        if V.SETUP_MANIFEST['REPACK_EROFS_IMG'] == '1':
-                            V.SETUP_MANIFEST['REPACK_EROFS_IMG'] = '1'
-                            V.SETUP_MANIFEST['REPACK_TO_RW'] = '0'
-                    if os.path.isfile(contexts) and os.path.isfile(fsconfig):
-                        if not V.JM:
-                            txts = {8: "img", 9: "new.dat", 10: "new.dat.br"}
-                            display(f'是否合成: {f_basename}.{txts.get(int(option), ".new.dat.br")} [1/0]: ', end='')
-                            if input() != '1':
-                                continue
-                        recompress(source, fsconfig, contexts, infojson, int(option))
+                for file in glob(V.config + '*_contexts.txt'):
+                    f_basename = os.path.basename(file).rsplit('_', 1)[0]
+                    source = V.main_dir + f_basename
+                    if os.path.isdir(source):
+                        fsconfig = V.config + f_basename + '_fsconfig.txt'
+                        contexts = V.config + f_basename + '_contexts.txt'
+                        infojson = V.config + f_basename + '_info.txt'
+                        if not os.path.isfile(infojson):
+                            infojson = None
+                        if V.SETUP_MANIFEST['REPACK_EROFS_IMG'] == '0' and V.SETUP_MANIFEST['REPACK_TO_RW'] == '1':
+                            if V.SETUP_MANIFEST['REPACK_EROFS_IMG'] == '1':
+                                V.SETUP_MANIFEST['REPACK_EROFS_IMG'] = '0'
+                                V.SETUP_MANIFEST['REPACK_TO_RW'] = '1'
+                        elif V.SETUP_MANIFEST['REPACK_EROFS_IMG'] == '0' and V.SETUP_MANIFEST['REPACK_TO_RW'] == '0':
+                            if V.SETUP_MANIFEST['REPACK_EROFS_IMG'] == '1':
+                                V.SETUP_MANIFEST['REPACK_EROFS_IMG'] = '1'
+                                V.SETUP_MANIFEST['REPACK_TO_RW'] = '0'
+                        if os.path.isfile(contexts) and os.path.isfile(fsconfig):
+                            if not V.JM:
+                                txts = {8: "img", 9: "new.dat", 10: "new.dat.br"}
+                                display(f'是否合成: {f_basename}.{txts.get(int(option), ".new.dat.br")} [1/0]: ', end='')
+                                if input() != '1':
+                                    continue
+                            recompress(source, fsconfig, contexts, infojson, int(option))
         else:
             input(f'\x1b[0;33m{option}\x1b[0m enter error !')
         input('> 任意键继续')
