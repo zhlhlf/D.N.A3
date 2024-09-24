@@ -935,7 +935,7 @@ def decompress_img(source, distance, keep=1):
                     source = source.replace('.unsparse', '')
                 call(f'extract.erofs -i {source.replace(os.sep, "/")} -o {V.main_dir} -x')
             elif file_type == 'super':
-                #lpunpack.unpack(source,V.input)
+                lpunpack.unpack(source,V.input)
                 for img in glob(V.input + '*_*.img'):
                     if os.path.getsize(img) == 0:
                         os.remove(img)
@@ -1051,7 +1051,7 @@ def decompress_bin(infile, outdir, flag='1'):
                 extract_payload.run(infile, outdir, part)
     else:
         print(f"> {YELLOW}提取【{os.path.basename(infile)}】所有镜像文件:{CLOSE}\n")
-        extract_payload.main(infile, outdir)
+        extract_payload.run(infile, outdir)
         j = input('> 是否继续分解img [0/1]: ') == 1
         if j != 1:
             return
